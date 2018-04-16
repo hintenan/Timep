@@ -68,7 +68,7 @@ refData = {'Session': day,
 results = db.child('available_ref').push(refData, user['idToken'])
 
 # pygame mixer parameters
-pygame.init()
+# pygame.init()
 pygame.mixer.init()
 # Fix the "first sound missing" problem
 pygame.mixer.Sound("./wave/Square7000_015s.wav").play()
@@ -82,12 +82,6 @@ GPIO.setmode(GPIO.BOARD)
 pin2buzzer = 19
 GPIO.setup(pin2buzzer, GPIO.OUT)
 GPIO.output(pin2buzzer, GPIO.LOW)
-# Servo initiation
-pin2servo = 21 # servo pin
-servo2lr = [11, 4]
-GPIO.setup(pin2servo, GPIO.OUT)
-servoSpin = GPIO.PWM(21, 50)        #sets pin 21 to PWM and sends 50 signals per second
-servoSpin.start(7.5)          #starts by sending a pulse at 7.5% to center the servo
 
 # Sensor pin initiation
 pin2response = [11, 15]
@@ -157,12 +151,6 @@ try:
         # updating du, pos
         du, pos = beh.du_pos(updating_trial, du, pos)
         currentCon['du'] = round(du, 2)
-        
-        # First Spin
-        if beh.level <= beh.curLear['Guilded']:
-            if updating_trial == 0:
-                currentCon['Spin_pos'] = pos
-                servoSpin.start(servo2lr[pos])
             
         print(bcolors.HEADER + 'Trial NO. '+ str(updating_trial + 1) 
             + bcolors.ENDC)
@@ -187,10 +175,13 @@ try:
                         cpoked_time = time.time()
                     
                     # reset insight time
+                    if holding == 0:
+                        print('insightful')
                     insightTime[0] = -1
+                    
                     # Sound module
-                    # pygame.mixer.Sound("./wave/Square7000_015s.wav").play()
                     GPIO.output(pin2buzzer, GPIO.HIGH)
+                    time.sleep(0.10)
                     while (time.time() < (cpoked_time + 0.15)):
                         continue
                     GPIO.output(pin2buzzer, GPIO.LOW)
@@ -200,9 +191,8 @@ try:
                     holding = beh.nose_holding(cpoked_time + 0.15, du)
                     
                     if (holding | (beh.leaving[updating_trial] > 14)):
-                        # Hoding: beep
-                        # pygame.mixer.Sound("./wave/Square7000_015s.wav").play()
-                        # time.sleep(1.5)
+                        # Holding: beep
+                        # Sound module
                         while (time.time() < (cpoked_time + du + 0.15)):
                             continue
                         GPIO.output(pin2buzzer, GPIO.HIGH)
@@ -210,55 +200,31 @@ try:
                         while (time.time() < (cpoked_time + du + 0.3)):
                             continue
                         GPIO.output(pin2buzzer, GPIO.LOW)
-                        # time.sleep(0.5)
 
-                        # uwater
-                        #if beh.level < beh.curLear['Cwater_removal']:
-                        #    uwater(water3lr['CENTER'])
-                        #elif (beh.level < beh.curLear['Well_Trained']):
-                        #    if ((beh.choiceWaterRate[updating_trial] < beh.lvlp[beh.level]) | (beh.leaving[updating_trial] > 9)):
-                        #        uwater(water3lr['CENTER'])
-
-                        # Spin
-                        if beh.level <= beh.curLear['Guilded']:
-                            if currentCon['Spin_pos'] != pos:
-                                currentCon['Spin_pos'] = pos
-                                servoSpin.ChangeDutyCycle(servo2lr[pos])
-
-                        holding_fail = False
                         # Update progress
                         currentCon['curCon'] = beh.curCon['Center_poked']
-                        # print(currentCon)
+                        # Notification
                         print('GO', str2lr[pos][1])
-                        # log
-                        # bah.record_log([updating_trial + 1, currentCon, trial_init_time - cpoked_time, 1])
-
+                        
                     # Holding Fail
                     else:
                         # Leaving: white noise
-                        # ws = './wave/White_' + str(beh.punishment * 100) + 's.wav'
-                        # pygame.mixer.Sound(ws).play()
                         beh.errorBuzzer(pin2buzzer)
         
-						
                         # Update progress
                         currentCon['curCon'] = beh.curCon['Center_pending']
 						
+                        # para
                         beh.leaving[updating_trial] += 1
-                        holding_fail = True
-                        
-                        
-
                         
                         # Punishment
                         print('Punishment ' + str(beh.punishment_center) + 's')
                         time.sleep(0.5)
-						
-                        # log
-                        # bah.record_log([updating_trial + 1, currentCon, trial_init_time - cpoked_time, leaving])
-                            
+
+                else:
+                    pass
+
             # good mice
-            # priority: 
             elif poked == beh.curCon['Correct_Respose']:
                 if (currentCon['curCon'] == beh.curCon['Center_poked']):
                     # time
@@ -268,124 +234,82 @@ try:
                     time.sleep(0.5)
                     uwater(water2lr[pos][poked])
 
-                    # progress
+                    # stack
+                    beh.strike += 1
+
+                    # Updating progress
                     currentCon['curCon'] = beh.curCon['Trial_responded']
                     print('Correct Response')
-                    # print(currentCon)
-                    beh.strike += 1
-                    # log
-                    # bah.record_log([updating_trial + 1, currentCon, trial_init_time - cpoked_time, 1])
+                    
                     # Trial Responded
                     break
 
                 # first trial handle
-                # retain current trial with water
                 elif (currentCon['curCon'] == beh.curCon['First_trial']):
+                    
                     # Updating progress
                     currentCon['curCon'] = beh.curCon['Center_pending']
-                    # print(currentCon)
 
                     # uwater
                     time.sleep(0.5)
                     uwater(water2lr[pos][poked])
 
-                    # log
-                    # bah.record_log([updating_trial + 1, currentCon, trial_init_time - cpoked_time, 0])
-				
-                elif (currentCon['curCon'] == beh.curCon['Misplace']):
-                    # double misplace handle
-                    # updating progress
-                    currentCon['curCon'] = beh.curCon['Misplace']
-                    
-                    #Spin
-                    if currentCon['Spin_pos'] != pos:
-                        currentCon['Spin_pos'] = pos
-                        servoSpin.start(servo2lr[pos])
-                    # print(currentCon)
-
-                    # insight count
-                    beh.insight[updating_trial] -= 1
-                    print('NOT insightful.')
-                    # sleep
-                    time.sleep(2)
-
-                    # log
-                    # bah.record_log([updating_trial + 1, 0, pin, ppoked_time - cpoked_time, 0])
                 # insight calculation
                 elif (currentCon['curCon'] == beh.curCon['Center_pending']):
                     uniTime = time.time()
                     insightTime = beh.insight_test(updating_trial, uniTime, insightTime)
-                    if (holding_fail & bool(int(insightTime[2]))):
+                    if ((not holding) & bool(int(insightTime[2]))):
                         print('Paired Uninsight')
-                        holding_fail = False
+                        holding = 1
 
             # bad mice
-            # Priority: Unguided
-            # miplace : spin
             elif poked == beh.curCon['Misplace']:
-                if (beh.level > beh.curLear['Guilded']):
-                    if currentCon['curCon'] == beh.curCon['Center_poked']:
-                        ppoked_time = time.time()
+                if currentCon['curCon'] == beh.curCon['Center_poked']:
+                    # time
+                    ppoked_time = time.time()
 
-                        print('Wrong Response')
-                        beh.strike = 0
+                    # stack
+                    beh.strike = 0
 
-                        # Wrong: white noise
-                        ws = './wave/White_' + str(beh.punishment_peri * 100) + 's.wav'
-                        pygame.mixer.Sound(ws).play()
-                        # Punishment
-                        print('Punishment ' + str(beh.punishment_peri) + 's')
-                        time.sleep(beh.punishment_peri + 1)
-                        # Trial Responded
-                    
-                        # progress
+                    # Wrong: white noise
+                    ws = './wave/White_' + str(beh.punishment_peri * 100) + 's.wav'
+                    pygame.mixer.Sound(ws).play()
+                    # Punishment
+                    print('Punishment ' + str(beh.punishment_peri) + 's')
+                    time.sleep(beh.punishment_peri + 1)
+
+                    if (beh.level > beh.curLear['Guilded']):
+
+                        # Updating progress
                         currentCon['curCon'] = beh.curCon['Trial_responded']
-                        # print(currentCon)
+                        print('Wrong Response')
+                    
+                        # Trial Responded
                         break
-                        
                     else:
-                        uniTime = time.time()
-                        insightTime = beh.insight_test(updating_trial, uniTime, insightTime)
-                        if (holding_fail & bool(int(insightTime[2]))):
-                            print('paired uninsight')
-                            holding_fail = False
-                
-                else:
-                    if currentCon['curCon'] == beh.curCon['Center_poked']:
                         # Updating progress
                         currentCon['curCon'] = beh.curCon['Misplace']
-                        
-                        #Spin
-                        if currentCon['Spin_pos'] == pos:
-                            currentCon['Spin_pos'] = int(not pos)
-                            servoSpin.ChangeDutyCycle(servo2lr[not pos])
-                        print('Wrong Respose')
-                        # print(currentCon)
-                        
-                        # Wrong: white noise
-                        ws = './wave/White_' + str(beh.punishment_peri * 100) + 's.wav'
-                        pygame.mixer.Sound(ws).play()
-                        # Punishment
-                        print('Punishment ' + str(beh.punishment_peri) + 's')
-                        time.sleep(beh.punishment_peri + 1)
-
-                        # insight count
-                        beh.insight[updating_trial] -= 1
-                        print('NOT insightful.')
+                        print('Wrong Response')
 
                         # tender mode
-                        if beh.level == 3:
-                            beh.tenderCount[updating_trial] += 1
-                        
-                        time.sleep(2)
-                    else:
-                        uniTime = time.time()
-                        insightTime = beh.insight_test(updating_trial, uniTime, insightTime)
-                        if (holding_fail & bool(int(insightTime[2]))):
-                            print('paired uninsight')
-                            holding_fail = False
+                        beh.tenderCount[updating_trial] += 1
 
-            
+                elif (currentCon['curCon'] == beh.curCon['First_trial']):
+                
+                    # Updating progress
+                    currentCon['curCon'] = beh.curCon['Center_pending']
+
+                    # uwater
+                    time.sleep(0.5)
+                    uwater(water2lr[not pos][1])   
+                
+                else:
+                    uniTime = time.time()
+                    insightTime = beh.insight_test(updating_trial, uniTime, insightTime)
+                    if ((not holding) & bool(int(insightTime[2]))):
+                        print('paired uninsight')
+                        holding = 1
+                        
         ### end of detection
 
         # Recording Data
@@ -408,10 +332,10 @@ try:
             objData = {'TrialNO': updating_trial + 1,
                 'Correction': poked,
                 'Position': int(pos),
+                'TrialBT': trial_init_time,
                 'CPT': cpoked_base_time,
                 'HoldingT': cpoked_time,
                 'TrialET': ppoked_time,
-                'TrialBT': trial_init_time,
                 'HoldingDu': round(float(du), 2),
                 'LeavingCount': int(leavingCount),
                 'LearningLevel': int(beh.level),
@@ -456,7 +380,7 @@ finally:
     
     
     GPIO.cleanup()
-    pygame.quit()
+    pygame.mixer.quit()
 
 
 
