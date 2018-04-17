@@ -335,24 +335,24 @@ class data_structure:
             self.lvlstrike = [4, 4, 4, 4, 4, 2]
         
         if self.level == self.curLear['Hab']:
-            if ((self.strike >= self.lvlstrike[self.level]) | ((self.culmu_sigLen % 8) == 0)):
+            if ((self.culmu_sigLen % 4) == 0):
                 self.strike = 0
                 self.culmu_sigLen = 1
                 pos = not pos
                 if du < 1.5:
-                    du = self.randDuoLongPool[self.longPool]
+                    du = self.randLongPool[self.longPool]
                     self.longPool += 1
                 else:
-                    du = self.randDuoShortPool[self.shortPool]
+                    du = self.randShortPool[self.shortPool]
                     self.shortPool += 1
 
             else:
                 self.culmu_sigLen += 1
                 if du < 1.5:
-                    du = self.randDuoShortPool[self.shortPool]
+                    du = self.randShortPool[self.shortPool]
                     self.shortPool += 1
                 else:
-                    du = self.randDuoLongPool[self.longPool]
+                    du = self.randLongPool[self.longPool]
                     self.longPool += 1
 
         elif self.level < self.curLear['SigRandom']:

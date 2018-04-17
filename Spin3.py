@@ -205,6 +205,12 @@ try:
                         # Notification
                         print('GO', str2lr[pos][1])
                         
+                        # bonus
+                        if beh.level == beh.curLear['Hab']:
+                            # uwater
+                            time.sleep(0.5)
+                            uwater(water2lr[pos][True])
+
                     # Holding Fail
                     else:
                         # Leaving: white noise
