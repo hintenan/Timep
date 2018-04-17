@@ -5,11 +5,13 @@ Created on Fri Jul  20 16:34:51 2017
 @author: hintenan
 """
 
+from termios import tcflush, TCIFLUSH
 import RPi.GPIO as GPIO
 import time, random, pygame, csv
 import numpy as np
 from rc3 import uwater, det_triple, rc_time, data_structure
-import os
+import os, sys
+print("Initiating Firebase Module...")
 import pyrebase
 
 #**************************************************** 
@@ -28,27 +30,29 @@ firebase = pyrebase.initialize_app(config)
 
 # Get a reference to the auth service
 auth = firebase.auth()
-
+print("Authentication...")
 # Log the user in
 user = auth.sign_in_with_email_and_password(email, password)
 
 # Get a reference to the database service
 db = firebase.database()
-
+print("Firebase Connected.")
 #**************************************************** 
 # End of Set Firebase Config                                                
 #**************************************************** 
 
 #open a data file
 block = 16
-print("If sound dose not work properly while using 3.5 mm analog output, input \"amixer cset numid=3 1\" in command line.")
-
+#print("If sound dose not work properly while using 3.5 mm analog output, input \"amixer cset numid=3 1\" in command line.")
+tcflush(sys.stdin, TCIFLUSH)
 subName = input("Subject name: ")
+tcflush(sys.stdin, TCIFLUSH)
 sub_conf = './Fan_data/conf/' + subName + '.conf'
+
 beh = data_structure(sub_conf, block)
 
-print(beh.posRand)
-print(beh.duRand)
+#print(beh.posRand)
+#print(beh.duRand)
 # print(beh.leaving)
 
 day = input("Session NO.: ")
@@ -225,6 +229,10 @@ try:
                                 currentCon['Spin_pos'] = pos
                                 servoSpin.ChangeDutyCycle(servo2lr[pos])
 
+                        if beh.level == 0:
+                            time.sleep(0.5)
+                            uwater(water2lr[pos][1])
+
                         holding_fail = False
                         # Update progress
                         currentCon['curCon'] = beh.curCon['Center_poked']
@@ -374,8 +382,8 @@ try:
                         print('NOT insightful.')
 
                         # tender mode
-                        if beh.level == 3:
-                            beh.tenderCount[updating_trial] += 1
+                        
+                        beh.tenderCount[updating_trial] += 1
                         
                         time.sleep(2)
                     else:
@@ -408,10 +416,10 @@ try:
             objData = {'TrialNO': updating_trial + 1,
                 'Correction': poked,
                 'Position': int(pos),
+                'TrialBT': trial_init_time,
                 'CPT': cpoked_base_time,
                 'HoldingT': cpoked_time,
                 'TrialET': ppoked_time,
-                'TrialBT': trial_init_time,
                 'HoldingDu': round(float(du), 2),
                 'LeavingCount': int(leavingCount),
                 'LearningLevel': int(beh.level),

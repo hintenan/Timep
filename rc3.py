@@ -133,7 +133,7 @@ def det_one(pos, val):
 
 def uwater (pin_to_water):
     GPIO.output(pin_to_water, False)
-    time.sleep(0.02)
+    time.sleep(0.05)
     GPIO.output(pin_to_water, True)
 
 def memory_check(count_down, last_memory):
@@ -238,7 +238,7 @@ class data_structure:
         self.leaving_recount(self.level)
 
         self.curCon = {'First_trial': -1, 'Misplace': 0, 'Correct_Respose': 1, 'Center_poked': 2, 'Center_pending':10, 'Trial_responded': 100}
-        self.curLear = {'Hab': 0, 'HoldingTraining': 3, 'Guilded': 3, 'Sig4': 4, 'Sig2': 5, 'SigRandom': 6, 'sig': 7}
+        self.curLear = {'Hab': 0, 'HoldingTraining': 3, 'Guilded': 4, 'Sig4': 4, 'Sig2': 5, 'SigRandom': 6, 'sig': 7}
         self.data = []
         
         # posRand
@@ -266,7 +266,7 @@ class data_structure:
         self.sustain = 0
 
     def leaving_recount(self, level):
-        self.long_leaving = 4010 - level * 2000
+        self.long_leaving = 4010 - level * 1500
         self.short_leaving = 2010 - level * 1000
         if self.long_leaving < 10:
             self.long_leaving = 10
