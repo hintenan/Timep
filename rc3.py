@@ -238,7 +238,7 @@ class data_structure:
         self.leaving_recount(self.level)
 
         self.curCon = {'First_trial': -1, 'Misplace': 0, 'Correct_Respose': 1, 'Center_poked': 2, 'Center_pending':10, 'Trial_responded': 100}
-        self.curLear = {'Hab': 0, 'HoldingTraining': 3, 'Guilded': 4, 'Sig4': 4, 'Sig2': 5, 'SigRandom': 6, 'sig': 7}
+        self.curLear = {'Hab': 0, 'HoldingTraining': 3, 'Guilded': 4, 'Sig4': 5, 'Sig2': 6, 'SigRandom': 7, 'sig': 8}
         self.data = []
         
         # posRand
@@ -332,51 +332,35 @@ class data_structure:
         if (self.level < self.curLear['SigRandom']) & (tnum == 0):
             self.shortPool = self.longPool = 0
             
-            self.lvlstrike = [4, 4, 4, 4, 4, 2]
+            self.lvlstrike = [4, 4, 4, 4, 4, 4, 2, 1]
         
-        if self.level == self.curLear['Hab']:
-            if ((self.culmu_sigLen % 4) == 0):
-                self.strike = 0
-                self.culmu_sigLen = 1
-                pos = not pos
-                if du < 1.5:
-                    du = self.randLongPool[self.longPool]
-                    self.longPool += 1
-                else:
-                    du = self.randShortPool[self.shortPool]
-                    self.shortPool += 1
 
+        if self.level < self.curLear['SigRandom']:
+            if self.level <= self.curLear['Guilded']:
+                switch = ((self.culmu_sigLen % 4) == 0)
             else:
-                self.culmu_sigLen += 1
-                if du < 1.5:
-                    du = self.randShortPool[self.shortPool]
-                    self.shortPool += 1
-                else:
-                    du = self.randLongPool[self.longPool]
-                    self.longPool += 1
-
-        elif self.level < self.curLear['SigRandom']:
-            if ((self.strike >= self.lvlstrike[self.level]) | ((self.culmu_sigLen % 8) == 0)):
-                self.strike = 0
-                self.culmu_sigLen = 1
-                pos = not pos
-                if du < 1.5:
-                    du = self.randLongPool[self.longPool]
-                    self.longPool += 1
-                else:
-                    du = self.randShortPool[self.shortPool]
-                    self.shortPool += 1
-
-            else:
-                self.culmu_sigLen += 1
-                if du < 1.5:
-                    du = self.randShortPool[self.shortPool]
-                    self.shortPool += 1
-                else:
-                    du = self.randLongPool[self.longPool]
-                    self.longPool += 1
-
+                switch = ((self.strike >= self.lvlstrike[self.level]) | ((self.culmu_sigLen % 8) == 0))
             
+            if switch:
+                self.strike = 0
+                self.culmu_sigLen = 1
+                pos = not pos
+                if du < 1.5:
+                    du = self.randLongPool[self.longPool]
+                    self.longPool += 1
+                else:
+                    du = self.randShortPool[self.shortPool]
+                    self.shortPool += 1
+
+            else:
+                self.culmu_sigLen += 1
+                if du < 1.5:
+                    du = self.randShortPool[self.shortPool]
+                    self.shortPool += 1
+                else:
+                    du = self.randLongPool[self.longPool]
+                    self.longPool += 1
+
         elif self.level == self.curLear['SigRandom']:
             du = self.duRand[tnum]
             pos = self.posRand[tnum]
