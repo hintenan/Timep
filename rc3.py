@@ -232,13 +232,16 @@ class data_structure:
     
     def __init__(self, sub_conf, block):
 
-        self.level, self.short_pos = self.read_conf_file(sub_conf)
-        if self.level == 7:
-            self.level = 6
-        self.leaving_recount(self.level)
-
         self.curCon = {'First_trial': -1, 'Misplace': 0, 'Correct_Respose': 1, 'Center_poked': 2, 'Center_pending':10, 'Trial_responded': 100}
-        self.curLear = {'Hab': 0, 'HoldingTraining': 3, 'Guilded': 4, 'Sig4': 5, 'Sig2': 6, 'SigRandom': 7, 'sig': 8}
+        self.curLear = {'Hab': 0, 'HoldingTraining': 5, 'Guilded': 5, 'Sig4': 6, 'Sig2': 7, 'SigRandom': 8, 'sig': 9}
+        
+        self.level, self.short_pos = self.read_conf_file(sub_conf)
+        if self.level == self.curLear['SigRandom']:
+            self.level = self.curLear['sig2']
+        
+        self.min_leaving = 50
+        short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
+
         self.data = []
         
         # posRand
@@ -265,13 +268,15 @@ class data_structure:
         self.strike = 0
         self.sustain = 0
 
-    def leaving_recount(self, level):
-        self.long_leaving = 4050 - level * 1500
-        self.short_leaving = 2050 - level * 1000
-        if self.long_leaving < 50:
-            self.long_leaving = 50
-        if self.short_leaving < 50:
-            self.short_leaving = 50
+    def leaving_recount(self, level, min_leaving):
+        short_leaving = 2050 - level * 2 * 300
+        long_leaving = 4050 - level * 2 * 400
+        
+        if short_leaving < min_leaving:
+            short_leaving = min_leaving
+        if long_leaving < min_leaving:
+            long_leaving = min_leaving
+        return short_leaving, long_leaving
 
     # def hadd(self, data):
     #     self.data = np.hstack((self.data, data))
@@ -581,7 +586,7 @@ class data_structure:
         tranLen, tran = self.trans(tnum)
         
         if self.leaving[tnum] > 0:
-            self.leaving_recount(self.level)
+            short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
 
         if self.level == self.curLear['Hab']: # level 0
             if tnum == (self.culmu_trial - 1):
@@ -589,22 +594,13 @@ class data_structure:
                 self.level += 1
                 self.culmu_trial += self.lvlt[self.level]
                 
-                self.leaving_recount(self.level)
+                short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
         
-        elif self.level == self.curLear['Guilded']: # level 3 tender mode
-            tcr = self.tenderChoiceRate(tnum)
-            print('tcr =', tcr)
-            if tnum == (self.culmu_trial - 1):
-                
-                if ((tcr[0] < 0.3) & (tcr[-1] < 0.3) & (cr[0] >= 0.8) & (cr[-1] >= 0.8) & (tran >= 0.7) & (tranLen >= ((self.level - 2) * 4 + self.culmu_tranLen))):
-                    self.sustain += 1
-                else:
-                    self.sustain = 0  
-
         elif self.level < self.curLear['Sig4']: # level holding
+            tcr = self.tenderChoiceRate(tnum)
             if tnum == (self.culmu_trial - 1):
     
-                if ((self.sdr > 0.89) & (self.ldr > 0.84)):
+                if ((self.sdr > 0.6) & (self.ldr > 0.6) & (tcr[0] > 0.7) & (tcr[-1] > 0.7) & (tran >= 0.7)):
                     self.sustain += 1
                 else:
                     self.sustain = 0    
@@ -613,14 +609,14 @@ class data_structure:
                     self.level += 1
                     self.culmu_trial += self.lvlt[self.level]
                     self.culmu_tranLen += tranLen
-                    self.leaving_recount(self.level)
+                    short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
                 else:
                     self.culmu_trial += 1
                     print('self.culmu_trial =', self.culmu_trial)
                           
         elif (self.level < self.curLear['SigRandom']):
             if tnum == (self.culmu_trial - 1):
-                if ((cr[0] >= 0.8) & (cr[-1] >= 0.8) & (tran >= 0.7) & (tranLen >= ((self.level - 3) * 4 + self.culmu_tranLen))):
+                if ((cr[0] >= 0.8) & (cr[-1] >= 0.8) & (tran >= 0.7) & (tranLen >= ((self.level - 4) * 4 + self.culmu_tranLen))):
                     self.sustain += 1
                 else:
                     self.sustain = 0    
@@ -630,7 +626,7 @@ class data_structure:
                     self.punishment_peri += 2
                     self.culmu_trial += self.lvlt[self.level]
                     self.culmu_tranLen += tranLen
-                    self.leaving_recount(self.level)
+                    short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
 
                 else:
                     self.culmu_trial += 1
@@ -643,12 +639,14 @@ class data_structure:
                 #        self.level = self.curLear['Sig4']:
                 #        self.culmu_trial += self.lvlt[self.level]
                 #        self.culmu_tranLen += tranLen
-                #        self.leaving_recount(self.level)
+                #        short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
                 
 
         print('ShortHoldingRate:', round(self.sdr, 4))
         print('LongHoldingRate:', round(self.ldr, 4))
         print('Choice rate:', np.round(cr, 4))
+        if self.level <= self.curLear['Guilded']:
+            print('Tender choice rate:', np.round(tcr, 4))
         print('Transition:', round(tran, 4))
         if self.level >= 4:
             print('tranLen:', tranLen, '>', ((self.level - 3) * 4 + self.culmu_tranLen))
