@@ -46,8 +46,8 @@ subName = input("Subject name: ")
 sub_conf = './Fan_data/conf/' + subName + '.conf'
 beh = data_structure(sub_conf, block)
 
-print(beh.posRand)
-print(beh.duRand)
+# print(beh.posRand)
+# print(beh.duRand)
 # print(beh.leaving)
 
 day = input("Session NO.: ")

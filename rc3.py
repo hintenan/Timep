@@ -548,9 +548,8 @@ class data_structure:
         crList = [0, 0, 0, 0, 0, 0, 0, 0]
         if tnum :
             SL_list = [0.6, 1.05 , 1.26 , 1.38 , 1.62 , 1.74 , 1.95, 2.4]
-            tenderMode_data = self.data[self.data[:, 9] == 3, :]
             for i in range(8):
-                choice_array = tenderMode_data[tenderMode_data[:, 7] == SL_list[i], 13]
+                choice_array = self.data[tenderMode_data[:, 7] == SL_list[i], 13]
                 if len(choice_array):
                     crList[i] = np.mean(choice_array[-10:] == 0)
                 else:
@@ -589,6 +588,7 @@ class data_structure:
             self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
 
         if self.level == self.curLear['Hab']: # level 0
+            tr = self.tenderRate(tnum)
             tcr = self.tenderChoiceRate(tnum)
             if tnum == (self.culmu_trial - 1):
                 
@@ -598,10 +598,11 @@ class data_structure:
                 self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
         
         elif self.level < self.curLear['Sig4']: # level holding
+            tr = self.tenderRate(tnum)
             tcr = self.tenderChoiceRate(tnum)
             if tnum == (self.culmu_trial - 1):
     
-                if ((self.sdr > 0.6) & (self.ldr > 0.6) & (tcr[0] > 0.7) & (tcr[-1] > 0.7) & (tran >= 0.7)):
+                if ((self.sdr > 0.6) & (self.ldr > 0.6) & (tr[0] < 0.3) & (tr[-1] < 0.3) & (tran >= 0.7)):
                     self.sustain += 1
                 else:
                     self.sustain = 0    
@@ -647,7 +648,8 @@ class data_structure:
         print('LongHoldingRate:', round(self.ldr, 4))
         print('Choice rate:', np.round(cr, 4))
         if self.level <= self.curLear['Guilded']:
-            print('Tender choice rate:', np.round(tcr, 4))
+            print('Tender rate:', np.round(tr, 4))
+            print('Tender Choice rate:', np.round(tcr, 4))
         print('Transition:', round(tran, 4))
         if self.level >= 4:
             print('tranLen:', tranLen, '>', ((self.level - 3) * 4 + self.culmu_tranLen))
