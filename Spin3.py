@@ -136,6 +136,7 @@ updating_trial = 0
 currentCon = {'Spin_pos': 0, 'curCon': -1, 'du': 0.6}
 currentCon['curCon'] = beh.curCon['First_trial']
 total_trial = 400
+tt = 0.05
 
 try:
     Session_init_time = time.time()
@@ -209,7 +210,7 @@ try:
                         if beh.level == beh.curLear['Hab']:
                             # uwater
                             time.sleep(0.5)
-                            uwater(water2lr[pos][True])
+                            uwater(water2lr[pos][True], tt)
 
                     # Holding Fail
                     else:
@@ -237,7 +238,7 @@ try:
 
                     # uwater
                     time.sleep(0.5)
-                    uwater(water2lr[pos][poked])
+                    uwater(water2lr[pos][poked],tt)
 
                     # stack
                     beh.strike += 1
@@ -257,7 +258,7 @@ try:
 
                     # uwater
                     time.sleep(0.5)
-                    uwater(water2lr[pos][poked])
+                    uwater(water2lr[pos][poked], tt)
 
                 # insight calculation
                 elif (currentCon['curCon'] == beh.curCon['Center_pending']):
@@ -306,7 +307,7 @@ try:
 
                     # uwater
                     time.sleep(0.5)
-                    uwater(water2lr[not pos][1])   
+                    uwater(water2lr[not pos][1], tt)   
                 
                 else:
                     uniTime = time.time()

@@ -13,7 +13,7 @@ sensors = [11, 15, 13]
 pin_water = [36, 38, 40]
 pin2lr = [[13, 11], [13, 15]]
 upper = 20
-upper_re = 190
+upper_re = 150
 lower = 15
 sensi = 10
 
@@ -131,9 +131,9 @@ def det_one(pos, val):
     return 2
 
 
-def uwater (pin_to_water):
+def uwater (pin_to_water,t):
     GPIO.output(pin_to_water, False)
-    time.sleep(0.05)
+    time.sleep(t)
     GPIO.output(pin_to_water, True)
 
 def memory_check(count_down, last_memory):
@@ -257,8 +257,8 @@ class data_structure:
         # self.culmu_sigTrial = self.lvlt[self.tender] # culmulative sig trial
         # self.culmu_tender = self.lvlt[self.tender] # culmulative tender trials
         
-        self.punishment_center = 3 # 3 sec
-        self.punishment_peri = 5 # 3 sec
+        self.punishment_center = 2 # 3 sec
+        self.punishment_peri = 1 # 3 sec
         # self.count = 0 # free var
         self.sdr = 0.0
         self.ldr = 0.0
@@ -266,12 +266,12 @@ class data_structure:
         self.sustain = 0
 
     def leaving_recount(self, level):
-        self.long_leaving = 4010 - level * 1500
-        self.short_leaving = 2010 - level * 1000
-        if self.long_leaving < 10:
-            self.long_leaving = 10
-        if self.short_leaving < 10:
-            self.short_leaving = 10
+        self.long_leaving = 4050 - level * 1500
+        self.short_leaving = 2050 - level * 1000
+        if self.long_leaving < 50:
+            self.long_leaving = 50
+        if self.short_leaving < 50:
+            self.short_leaving = 50
 
     # def hadd(self, data):
     #     self.data = np.hstack((self.data, data))
