@@ -589,6 +589,7 @@ class data_structure:
             self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
 
         if self.level == self.curLear['Hab']: # level 0
+            tcr = self.tenderChoiceRate(tnum)
             if tnum == (self.culmu_trial - 1):
                 
                 self.level += 1
