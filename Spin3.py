@@ -7,7 +7,7 @@ Created on Fri Jul  20 16:34:51 2017
 import RPi.GPIO as GPIO
 import time, random, pygame, csv
 import numpy as np
-from rc3 import uwater, det_triple, rc_time, data_structure
+from rc3 import uwaterPos, det_triple, rc_time, data_structure
 import os
 import pyrebase
 
@@ -83,15 +83,8 @@ GPIO.setup(pin2buzzer, GPIO.OUT)
 GPIO.output(pin2buzzer, GPIO.LOW)
 
 # Sensor pin initiation
-pin2response = [11, 15]
-pin2center = [13]
-pin2lr = [[13, 11], [13, 15]]
+
 str2lr = [["CENTER", "LEFT"], ["CENTER", "RIGHT"]]
-pin3lr = {'CENTER': 13, 'LEFT': 11, 'RIGHT': 15}
-code2lr = [[2, 0], [2, 1]]
-code3lr = {'CENTER': 2, 'LEFT': 0, 'RIGHT': 1}
-water2lr = [[38, 36], [38, 40]]
-water3lr = {'CENTER': 38, 'LEFT': 36, 'RIGHT': 40}
 
 # Water pin initiation
 pin_water_left = 36
@@ -180,6 +173,7 @@ try:
                     insightTime[0] = -1
                     
                     # Sound module
+                    # beh.buzzer015()
                     GPIO.output(pin2buzzer, GPIO.HIGH)
                     time.sleep(0.10)
                     while (time.time() < (cpoked_time + 0.15)):
@@ -193,11 +187,14 @@ try:
                     if (holding | (beh.leaving[updating_trial] > 14)):
                         # Holding: beep
                         # Sound module
+                        
                         while (time.time() < (cpoked_time + du + 0.15)):
                             continue
+                        
+                        buzzer_off = time.time()
                         GPIO.output(pin2buzzer, GPIO.HIGH)
                         time.sleep(0.10)
-                        while (time.time() < (cpoked_time + du + 0.3)):
+                        while (time.time() < (buzzer_off + 0.15)):
                             continue
                         GPIO.output(pin2buzzer, GPIO.LOW)
 
@@ -210,7 +207,7 @@ try:
                         if beh.level == beh.curLear['Hab']:
                             # uwater
                             time.sleep(0.5)
-                            uwater(water2lr[pos][True], tt)
+                            uwaterPos(pos, tt)
 
                     # Holding Fail
                     else:
@@ -238,7 +235,7 @@ try:
 
                     # uwater
                     time.sleep(0.5)
-                    uwater(water2lr[pos][poked],tt)
+                    uwaterPos(pos, tt)
 
                     # stack
                     beh.strike += 1
@@ -258,7 +255,7 @@ try:
 
                     # uwater
                     time.sleep(0.5)
-                    uwater(water2lr[pos][poked], tt)
+                    uwaterPos(pos, tt)
 
                 # insight calculation
                 elif (currentCon['curCon'] == beh.curCon['Center_pending']):
@@ -307,7 +304,7 @@ try:
 
                     # uwater
                     time.sleep(0.5)
-                    uwater(water2lr[not pos][1], tt)   
+                    uwaterPos(pos, tt)   
                 
                 else:
                     uniTime = time.time()
@@ -383,7 +380,6 @@ except KeyboardInterrupt:
     beh.write_conf_file(sub_conf)
     print('Time elaspe:', round((time.time() - Session_init_time) / 60), 'minutes', round((time.time() - Session_init_time) % 60), 'seconds')
 finally:
-    
     
     GPIO.cleanup()
     pygame.mixer.quit()

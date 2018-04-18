@@ -11,6 +11,7 @@ import numpy as np
 from typing import Tuple
 sensors = [11, 15, 13]
 pin_water = [36, 38, 40]
+water2lr = [[38, 36], [38, 40]]
 pin2lr = [[13, 11], [13, 15]]
 upper = 20
 upper_re = 150
@@ -130,6 +131,10 @@ def det_one(pos, val):
         return 0
     return 2
 
+def uwaterPos (pos,t):
+    GPIO.output(water2lr[pos][1], False)
+    time.sleep(t)
+    GPIO.output(water2lr[pos][1], True)
 
 def uwater (pin_to_water,t):
     GPIO.output(pin_to_water, False)
@@ -160,7 +165,7 @@ def memory_check(count_down, last_memory):
                         last_memory[i] = 1
                     #w.writerow(last_memory)
                     print("trigger something")
-                    uwater(pin_water[i])
+                    uwater(pin_water[i], 0.05)
     #print count[0], count[1], count[2]            
     #print '||  ', count[0], '  ||  ', count[1], '  ||  ', count[1], '  ||'    
 
@@ -219,7 +224,7 @@ def memory_longcheck(count_down, wrong_count, last_memory):
                         last_memory[i] = 1
                     #w.writerow(last_memory)
                     print("trigger something")
-                    uwater(pin_water[i])
+                    uwater(pin_water[i], 0.05)
 
                     
 
@@ -246,7 +251,7 @@ class data_structure:
         
         # posRand
         self.block = block
-        self.duRand, self.duRandBool, self.duRandDuo, self.posRand, self.leaving, self.insight = self.addPosRand(block, self.short_pos) 
+        self.duRand, _, self.randShortPool, self.randLongPool, self.posRand, self.leaving, self.insight, self.tenderCount = self.addPosRand(block, self.short_pos) 
 
         # learning_criteria
         self.lvl = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -297,9 +302,8 @@ class data_structure:
         duRand = []
 
         if ((block % 2) == 0):
-            half = int(block/2)
 
-            for i in range(multipler):
+            for _ in range(multipler):
 
                 new = self.perm_stimuli(SL_sound)
                 
@@ -319,16 +323,16 @@ class data_structure:
            
             leaving = np.zeros(block * multipler , dtype = np.int)
             insight = np.zeros(block * multipler , dtype = np.int)
-            self.tenderCount = np.zeros(block * multipler , dtype = np.int)
+            tenderCount = np.zeros(block * multipler , dtype = np.int)
             
             
-            self.randDuoShortPool = duRandDuo[duRandDuo < 1.5]
-            self.randDuoLongPool = duRandDuo[duRandDuo > 1.5]
-            self.randShortPool = duRand[duRand < 1.5]
-            self.randLongPool = duRand[duRand > 1.5]
+            #randDuoShortPool = duRandDuo[duRandDuo < 1.5]
+            #randDuoLongPool = duRandDuo[duRandDuo > 1.5]
+            randShortPool = duRand[duRand < 1.5]
+            randLongPool = duRand[duRand > 1.5]
 
 
-            return duRand, duRandBool, duRandDuo, posRand, leaving, insight
+            return duRand, duRandDuo, randShortPool, randLongPool, posRand, leaving, insight, tenderCount
         else:
             print("Odd block checking point.")
             
@@ -390,7 +394,7 @@ class data_structure:
         
         while ((time.time() - ctime) < du):
             counter += 1
-            
+
             hold_pos_re = rc_time_re(7)
             if (hold_pos_re > (upper_re - 10)):
                 leaving_counter += 1
@@ -549,7 +553,7 @@ class data_structure:
         if tnum :
             SL_list = [0.6, 1.05 , 1.26 , 1.38 , 1.62 , 1.74 , 1.95, 2.4]
             for i in range(8):
-                choice_array = self.data[tenderMode_data[:, 7] == SL_list[i], 13]
+                choice_array = self.data[self.data[:, 7] == SL_list[i], 13]
                 if len(choice_array):
                     crList[i] = np.mean(choice_array[-10:] == 0)
                 else:
@@ -684,7 +688,7 @@ class data_structure:
                         learning_level = int(row['val'])
 
         except IOError as e:
-            print("Unable to open configure file") #Does not exist OR no reading permissions
+            print("Unable to open configure file", e) #Does not exist OR no reading permissions
             exit()
         return learning_level, short_pos
     # end of read_conf_file(sub_conf)
@@ -700,7 +704,7 @@ class data_structure:
                 writer.writerow({'val': self.level, 'description': 'p1 stages'})
                 # writer.writerow({'val', 'description')
         except IOError as e:
-            print("Unable to write configure file") #Does not exist OR no reading permissions
+            print("Unable to write configure file", e) #Does not exist OR no reading permissions
             exit()
     # end of write_conf_file(sub_conf)
 
