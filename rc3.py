@@ -240,7 +240,7 @@ class data_structure:
             self.level = self.curLear['sig2']
         
         self.min_leaving = 50
-        short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
+        self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
 
         self.data = []
         
@@ -586,7 +586,7 @@ class data_structure:
         tranLen, tran = self.trans(tnum)
         
         if self.leaving[tnum] > 0:
-            short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
+            self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
 
         if self.level == self.curLear['Hab']: # level 0
             if tnum == (self.culmu_trial - 1):
@@ -594,7 +594,7 @@ class data_structure:
                 self.level += 1
                 self.culmu_trial += self.lvlt[self.level]
                 
-                short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
+                self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
         
         elif self.level < self.curLear['Sig4']: # level holding
             tcr = self.tenderChoiceRate(tnum)
@@ -609,7 +609,7 @@ class data_structure:
                     self.level += 1
                     self.culmu_trial += self.lvlt[self.level]
                     self.culmu_tranLen += tranLen
-                    short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
+                    self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
                 else:
                     self.culmu_trial += 1
                     print('self.culmu_trial =', self.culmu_trial)
@@ -626,7 +626,7 @@ class data_structure:
                     self.punishment_peri += 2
                     self.culmu_trial += self.lvlt[self.level]
                     self.culmu_tranLen += tranLen
-                    short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
+                    self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
 
                 else:
                     self.culmu_trial += 1
@@ -639,7 +639,7 @@ class data_structure:
                 #        self.level = self.curLear['Sig4']:
                 #        self.culmu_trial += self.lvlt[self.level]
                 #        self.culmu_tranLen += tranLen
-                #        short_leaving, long_leaving = self.leaving_recount(self.level, self.min_leaving)
+                #        self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
                 
 
         print('ShortHoldingRate:', round(self.sdr, 4))
