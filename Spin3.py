@@ -172,32 +172,11 @@ try:
                         print('insightful')
                     insightTime[0] = -1
                     
-                    # Sound module
-                    # beh.buzzer015()
-                    GPIO.output(pin2buzzer, GPIO.HIGH)
-                    time.sleep(0.10)
-                    while (time.time() < (cpoked_time + 0.15)):
-                        continue
-                    GPIO.output(pin2buzzer, GPIO.LOW)
-                    
-                    # Holding checking
+                    # beep -> Holding -> beep
                     # Holding = beh.nose_holding(updating_trial) # keyboard input
                     holding = beh.nose_holding(cpoked_time + 0.15, du)
                     
                     if (holding | (beh.leaving[updating_trial] > 14)):
-                        # Holding: beep
-                        # Sound module
-                        
-                        while (time.time() < (cpoked_time + du + 0.15)):
-                            continue
-                        
-                        buzzer_off = time.time()
-                        GPIO.output(pin2buzzer, GPIO.HIGH)
-                        time.sleep(0.10)
-                        while (time.time() < (buzzer_off + 0.15)):
-                            continue
-                        GPIO.output(pin2buzzer, GPIO.LOW)
-
                         # Update progress
                         currentCon['curCon'] = beh.curCon['Center_poked']
                         # Notification
@@ -211,9 +190,6 @@ try:
 
                     # Holding Fail
                     else:
-                        # Leaving: white noise
-                        beh.errorBuzzer(pin2buzzer)
-        
                         # Update progress
                         currentCon['curCon'] = beh.curCon['Center_pending']
                         

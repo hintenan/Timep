@@ -17,6 +17,7 @@ upper = 20
 upper_re = 150
 lower = 15
 sensi = 10
+pin2buzzer = 19
 
 # interruption
 def rc_time_bar (pin_to_infra):
@@ -238,11 +239,11 @@ class data_structure:
     def __init__(self, sub_conf, block):
 
         self.curCon = {'First_trial': -1, 'Misplace': 0, 'Correct_Respose': 1, 'Center_poked': 2, 'Center_pending':10, 'Trial_responded': 100}
-        self.curLear = {'Hab': 0, 'HoldingTraining': 5, 'Guilded': 5, 'Sig4': 6, 'Sig2': 7, 'SigRandom': 8, 'sig': 9}
+        self.curLear = {'Hab': 0, 'HoldingTraining': 8, 'Guilded': 3, 'Sig4': 1, 'Sig2': 2, 'SigRandom': 3, 'sig': 4 }
         
         self.level, self.short_pos = self.read_conf_file(sub_conf)
-        if self.level == self.curLear['SigRandom']:
-            self.level = self.curLear['sig2']
+        #if self.level == self.curLear['SigRandom']:
+        #    self.level = self.curLear['sig2']
         
         self.min_leaving = 50
         self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
@@ -274,8 +275,8 @@ class data_structure:
         self.sustain = 0
 
     def leaving_recount(self, level, min_leaving):
-        short_leaving = 2050 - level * 2 * 300
-        long_leaving = 4050 - level * 2 * 400
+        short_leaving = 2050 - (level - self.curLear['sig']) * 2 * 300
+        long_leaving = 4050 - (level - self.curLear['sig']) * 2 * 400
         
         if short_leaving < min_leaving:
             short_leaving = min_leaving
@@ -343,7 +344,6 @@ class data_structure:
             
             self.lvlstrike = [4, 4, 4, 4, 4, 4, 2, 1]
         
-
         if self.level < self.curLear['SigRandom']:
             if self.level <= self.curLear['Guilded']:
                 switch = ((self.culmu_sigLen % 4) == 0)
@@ -370,29 +370,35 @@ class data_structure:
                     du = self.randLongPool[self.longPool]
                     self.longPool += 1
 
-        elif self.level == self.curLear['SigRandom']:
+        elif self.level >= self.curLear['SigRandom']:
             du = self.duRand[tnum]
             pos = self.posRand[tnum]
 
-        elif self.level == self.curLear['Sig']:
-            du = self.duRand[tnum]
-            pos = self.posRand[tnum]
+        
     
         # print('self.culmu_sigLen:', self.culmu_sigLen)
         return du, pos
 
     def nose_holding(self, ctime, du):
-    
+        # Sound module
+        # beh.buzzer015()
+        le_btime = time.time()
+        GPIO.output(pin2buzzer, GPIO.HIGH)
+        time.sleep(0.10)
+        while (time.time() < (le_btime + 0.15)):
+            continue
+        GPIO.output(pin2buzzer, GPIO.LOW)
+
         leaving_counter = 0
         holding = 1
-        le_btime = ctime
         counter = 0
+        le_btime = time.time()
         if du > 1.5:
             max_leaving = self.long_leaving
         else:
             max_leaving = self.short_leaving
         
-        while ((time.time() - ctime) < du):
+        while ((time.time() - ctime) < (du)):
             counter += 1
 
             hold_pos_re = rc_time_re(7)
@@ -406,11 +412,23 @@ class data_structure:
             
             if leaving_counter > max_leaving:
                 le_etime = time.time()
+
+                # Leaving: white noise
+                self.errorBuzzer(pin2buzzer)
+                
                 print("hold_du:", round(le_btime - ctime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
                 holding = 0
                 break
         if holding == 1:
             le_etime = time.time()
+            # Holding: beep
+            # Sound module
+            GPIO.output(pin2buzzer, GPIO.HIGH)
+            time.sleep(0.10)
+            while (time.time() < (le_etime + 0.15)):
+                continue
+            GPIO.output(pin2buzzer, GPIO.LOW)
+
             print("hold_du:", round(le_btime - ctime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
         print('counter:', counter)
         return holding
@@ -599,14 +617,32 @@ class data_structure:
                 self.level += 1
                 self.culmu_trial += self.lvlt[self.level]
                 
-                self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
+                #self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
         
-        elif self.level < self.curLear['Sig4']: # level holding
+        elif self.level < self.curLear['Sig']: # level holding
             tr = self.tenderRate(tnum)
             tcr = self.tenderChoiceRate(tnum)
             if tnum == (self.culmu_trial - 1):
     
-                if ((self.sdr > 0.7) & (self.ldr > 0.7) & (tr[0] < 0.3) & (tr[-1] < 0.3) & (tran >= 0.7)):
+                if ((tr[0] < 0.3) & (tr[-1] < 0.3) & (tran >= 0.7) & (tranLen >= (self.level * 4 + self.culmu_tranLen))):
+                    self.sustain += 1
+                else:
+                    self.sustain = 0    
+
+                if self.sustain >= 8:
+                    self.level += 1
+                    self.culmu_trial += self.lvlt[self.level]
+                    self.culmu_tranLen += tranLen
+                    #self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
+                else:
+                    self.culmu_trial += 1
+                    print('self.culmu_trial =', self.culmu_trial)
+        
+        elif self.level == self.curLear['Sig']: # level holding
+            
+            if tnum == (self.culmu_trial - 1):
+    
+                if ((cr[0] > 0.8) & (cr[-1] > 0.8) & (tran >= 0.7) & (tranLen >= (self.level * 4 + self.culmu_tranLen))):
                     self.sustain += 1
                 else:
                     self.sustain = 0    
@@ -620,34 +656,6 @@ class data_structure:
                     self.culmu_trial += 1
                     print('self.culmu_trial =', self.culmu_trial)
                           
-        elif (self.level < self.curLear['SigRandom']):
-            if tnum == (self.culmu_trial - 1):
-                if ((cr[0] >= 0.8) & (cr[-1] >= 0.8) & (tran >= 0.7) & (tranLen >= ((self.level - 4) * 4 + self.culmu_tranLen))):
-                    self.sustain += 1
-                else:
-                    self.sustain = 0    
-                    
-                if self.sustain >= 8:
-                    self.level += 1
-                    self.punishment_peri += 2
-                    self.culmu_trial += self.lvlt[self.level]
-                    self.culmu_tranLen += tranLen
-                    self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
-
-                else:
-                    self.culmu_trial += 1
-                    print('self.culmu_trial =', self.culmu_trial)
-
-        
-
-                #if ((cr[0] <= 0.2) | (cr[-1] <= 0.2)):
-                #    if ((tranLen >= ((self.level - 3) * 4 + self.culmu_tranLen)):
-                #        self.level = self.curLear['Sig4']:
-                #        self.culmu_trial += self.lvlt[self.level]
-                #        self.culmu_tranLen += tranLen
-                #        self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
-                
-
         print('ShortHoldingRate:', round(self.sdr, 4))
         print('LongHoldingRate:', round(self.ldr, 4))
         print('Choice rate:', np.round(cr, 4))
