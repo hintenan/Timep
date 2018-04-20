@@ -129,7 +129,7 @@ updating_trial = 0
 currentCon = {'Spin_pos': 0, 'curCon': -1, 'du': 0.6}
 currentCon['curCon'] = beh.curCon['First_trial']
 total_trial = 400
-tt = 0.05
+tt = 0.04
 
 try:
     Session_init_time = time.time()
@@ -183,7 +183,7 @@ try:
                         print('GO', str2lr[pos][1])
                         
                         # bonus
-                        if beh.level == beh.curLear['Hab']:
+                        if ((beh.level == beh.curLear['Hab']) | (updating_trial < 10)):
                             # uwater
                             time.sleep(0.5)
                             uwaterPos(pos, tt)
@@ -324,15 +324,16 @@ try:
                 'TenderCount': int(beh.tenderCount[updating_trial])
                 }
             results = db.child(subName).child(day).push(objData, user['idToken'])
-            # next trial num
-            updating_trial += 1
+            
             
             # learning level updating
-            beh.level_crite(updating_trial - 1)
+            beh.level_crite(updating_trial)
             print('Level:', beh.level, 'Sensitivity:', beh.short_leaving, beh.long_leaving)
             print('Time elaspe:', round((time.time() - Session_init_time) / 60), 'minutes', round((time.time() - Session_init_time) % 60), 'seconds')
 
-        
+            # next trial num
+            updating_trial += 1
+
         if updating_trial == total_trial:
             break
             

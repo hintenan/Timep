@@ -239,7 +239,7 @@ class data_structure:
     def __init__(self, sub_conf, block):
 
         self.curCon = {'First_trial': -1, 'Misplace': 0, 'Correct_Respose': 1, 'Center_poked': 2, 'Center_pending':10, 'Trial_responded': 100}
-        self.curLear = {'Hab': 0, 'HoldingTraining': 8, 'Guilded': 3, 'Sig4': 1, 'Sig2': 2, 'SigRandom': 3, 'sig': 4 }
+        self.curLear = {'Hab': 0, 'HoldingTraining': 8, 'Guilded': 3, 'Sig4': 1, 'Sig2': 2, 'SigRandom': 3, 'Sig': 4 }
         
         self.level, self.short_pos = self.read_conf_file(sub_conf)
         #if self.level == self.curLear['SigRandom']:
@@ -275,8 +275,8 @@ class data_structure:
         self.sustain = 0
 
     def leaving_recount(self, level, min_leaving):
-        short_leaving = 2050 - (level - self.curLear['sig']) * 2 * 300
-        long_leaving = 4050 - (level - self.curLear['sig']) * 2 * 400
+        short_leaving = 2050 - (level - self.curLear['Sig']) * 2 * 300
+        long_leaving = 4050 - (level - self.curLear['Sig']) * 2 * 400
         
         if short_leaving < min_leaving:
             short_leaving = min_leaving
@@ -624,7 +624,7 @@ class data_structure:
             tcr = self.tenderChoiceRate(tnum)
             if tnum == (self.culmu_trial - 1):
     
-                if ((tr[0] < 0.3) & (tr[-1] < 0.3) & (tran >= 0.7) & (tranLen >= (self.level * 4 + self.culmu_tranLen))):
+                if ((np.mean(tr) < 0.3) & (tran >= 0.7) & (tranLen >= (self.level * 4 + self.culmu_tranLen))):
                     self.sustain += 1
                 else:
                     self.sustain = 0    
@@ -663,7 +663,7 @@ class data_structure:
             print('Tender rate:', np.round(tr, 4))
             print('Tender Choice rate:', np.round(tcr, 4))
         print('Transition:', round(tran, 4))
-        if self.level >= 4:
+        if self.level < 5:
             print('tranLen:', tranLen, '>', ((self.level - 3) * 4 + self.culmu_tranLen))
         
     # end of level_crite
