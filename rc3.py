@@ -606,7 +606,7 @@ class data_structure:
             tcr = self.tenderChoiceRate(tnum)
             if tnum == (self.culmu_trial - 1):
     
-                if ((self.sdr > 0.6) & (self.ldr > 0.6) & (tr[0] < 0.3) & (tr[-1] < 0.3) & (tran >= 0.7)):
+                if ((self.sdr > 0.7) & (self.ldr > 0.7) & (tr[0] < 0.3) & (tr[-1] < 0.3) & (tran >= 0.7)):
                     self.sustain += 1
                 else:
                     self.sustain = 0    
