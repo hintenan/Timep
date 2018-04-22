@@ -317,8 +317,8 @@ class data_structure:
             
             self.randDuoShortPool = duRandDuo[duRandDuo < 1.5]
             self.randDuoLongPool = duRandDuo[duRandDuo > 1.5]
-            # self.randShortPool = duRand[duRand < 1.5]
-            # self.randLongPool = duRand[duRand > 1.5]
+            self.randShortPool = duRand[duRand < 1.5]
+            self.randLongPool = duRand[duRand > 1.5]
 
 
             return duRand, duRandBool, duRandDuo, posRand, leaving, insight, choiceWaterRate, tenderCount
@@ -373,10 +373,10 @@ class data_structure:
             else:
                 self.culmu_sigLen += 1
                 if du < 1.5:
-                    du = self.randDuoShortPool[self.shortPool]
+                    du = self.randShortPool[self.shortPool]
                     self.shortPool += 1
                 else:
-                    du = self.randDuoLongPool[self.longPool]
+                    du = self.randLongPool[self.longPool]
                     self.longPool += 1
 
         elif self.sig == 2:

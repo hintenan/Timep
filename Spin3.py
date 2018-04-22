@@ -44,8 +44,9 @@ print("If sound dose not work properly while using 3.5 mm analog output, input \
 
 subName = input("Subject name: ")
 sub_conf = './Fan_data/conf/' + subName + '.conf'
-beh = data_structure(sub_conf, block)
 
+# Loading data structure
+beh = data_structure(sub_conf, block)
 # print(beh.posRand)
 # print(beh.duRand)
 # print(beh.leaving)
@@ -66,8 +67,7 @@ refData = {'Session': day,
             }
 results = db.child('available_ref').push(refData, user['idToken'])
 
-# pygame mixer parameters
-# pygame.init()
+# pygame mixer init
 pygame.mixer.init()
 # Fix the "first sound missing" problem
 pygame.mixer.Sound("./wave/Square7000_015s.wav").play()
@@ -83,7 +83,6 @@ GPIO.setup(pin2buzzer, GPIO.OUT)
 GPIO.output(pin2buzzer, GPIO.LOW)
 
 # Sensor pin initiation
-
 str2lr = [["CENTER", "LEFT"], ["CENTER", "RIGHT"]]
 
 # Water pin initiation
@@ -113,20 +112,19 @@ class bcolors:
 # Experimental Parameters
 # Seperation of sound
 ###################################
-SL_sound = [0.6, 2.4, 1.05 , 1.26 , 1.38 , 1.62 , 1.74 , 1.95]
+#SL_sound = [0.6, 2.4, 1.05 , 1.26 , 1.38 , 1.62 , 1.74 , 1.95]
 ###################################
 
-# init
+# du pos init
 du = beh.duRand[0]
 pos = beh.posRand[0]
 insightTime = [time.time(), time.time(), False]
-holding_fail = False
 holding = 1
 
 anHour = 60*60
 halfAnHour = 90*60
 updating_trial = 0
-currentCon = {'Spin_pos': 0, 'curCon': -1, 'du': 0.6}
+currentCon = {'curCon': -1, 'du': 0.6}
 currentCon['curCon'] = beh.curCon['First_trial']
 total_trial = 400
 tt = 0.04
