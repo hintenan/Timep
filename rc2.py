@@ -14,8 +14,8 @@ pin_water = [36, 38, 40]
 pin2lr = [[13, 11], [13, 15]]
 upper = 20
 upper_re = 150
-lower = 15
-sensi = 10
+lower = 17
+sensi = 17
 
 # interruption
 def rc_time_bar (pin_to_infra):
@@ -338,7 +338,7 @@ class data_structure:
             self.lvlstrike = [4, 4]
                         
         if self.sig == 0:
-            if ((self.strike >= self.lvlstrike[self.sig]) | (((self.culmu_sigLen + 1) % 8) == 0)):
+            if ((self.strike >= self.lvlstrike[self.sig]) | (((self.culmu_sigLen + 1) % 4) == 0)):
                 self.strike = 0
                 self.culmu_sigLen = 0
                 pos = not pos
@@ -359,7 +359,7 @@ class data_structure:
                     self.longPool += 1
 
         if self.sig == 1:
-            if ((self.strike >= self.lvlstrike[self.sig]) | (((self.culmu_sigLen + 1) % 8) == 0)):
+            if ((self.strike >= self.lvlstrike[self.sig]) | (((self.culmu_sigLen + 1) % 4) == 0)):
                 self.strike = 0
                 self.culmu_sigLen = 0
                 pos = not pos

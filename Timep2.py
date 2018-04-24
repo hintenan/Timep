@@ -350,11 +350,18 @@ try:
                         print('Punishment ' + str(beh.punishment_peri) + 's')
                         time.sleep(beh.punishment_peri + 1)
                         # Trial Responded
-                        if beh.tender:
+                        if beh.tender == 1:
+                            # progress
+                            currentCon['curCon'] = beh.curCon['Center_pending']
+                            # print(currentCon)
+                            break
+
+                        if beh.tender == 2:
                             # progress
                             currentCon['curCon'] = beh.curCon['Trial_responded']
                             # print(currentCon)
                             break
+
                     else:
                         uniTime = time.time()
                         insightTime = beh.insight_test(updating_trial, uniTime, insightTime)

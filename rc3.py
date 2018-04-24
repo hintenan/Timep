@@ -15,8 +15,8 @@ water2lr = [[38, 36], [38, 40]]
 pin2lr = [[13, 11], [13, 15]]
 upper = 20
 upper_re = 150
-lower = 15
-sensi = 10
+lower = 17
+sensi = 17
 pin2buzzer = 19
 
 # interruption
@@ -664,7 +664,7 @@ class data_structure:
             print('Tender Choice rate:', np.round(tcr, 4))
         print('Transition:', round(tran, 4))
         if self.level < 5:
-            print('tranLen:', tranLen, '>', ((self.level - 3) * 4 + self.culmu_tranLen))
+            print('tranLen:', tranLen, '>', (self.level * 4 + self.culmu_tranLen))
         
     # end of level_crite
 
@@ -673,7 +673,8 @@ class data_structure:
         if tnum:
             
             tran = np.hstack((np.zeros(1), np.diff(self.data[:, 7] > 1.5)))
-            tran = self.data[tran != 0, 1]
+            tran = self.data[tran != 0, 13]
+            tran = (tran == 0)
         
             if len(tran):
                 return len(tran), np.mean(tran[-5:])

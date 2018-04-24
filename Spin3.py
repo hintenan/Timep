@@ -127,8 +127,7 @@ updating_trial = 0
 currentCon = {'curCon': -1, 'du': 0.6}
 currentCon['curCon'] = beh.curCon['First_trial']
 total_trial = 400
-tt = 0.04
-
+tt = 0.06
 try:
     Session_init_time = time.time()
     token_updating_timer = time.time()
@@ -181,7 +180,7 @@ try:
                         print('GO', str2lr[pos][1])
                         
                         # bonus
-                        if ((beh.level == beh.curLear['Hab']) | (updating_trial < 10)):
+                        if ((beh.level == beh.curLear['Hab']) | (updating_trial < 8)):
                             # uwater
                             time.sleep(0.5)
                             uwaterPos(pos, tt)
@@ -261,6 +260,9 @@ try:
                         currentCon['curCon'] = beh.curCon['Trial_responded']
                         print('Wrong Response')
                     
+                        # tender count
+                        beh.tenderCount[updating_trial] += 1
+
                         # Trial Responded
                         break
                     else:
@@ -268,7 +270,7 @@ try:
                         currentCon['curCon'] = beh.curCon['Misplace']
                         print('Wrong Response')
 
-                        # tender mode
+                        # tender count
                         beh.tenderCount[updating_trial] += 1
 
                 elif (currentCon['curCon'] == beh.curCon['First_trial']):
