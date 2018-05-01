@@ -252,7 +252,7 @@ class data_structure:
         
         # posRand
         self.block = block
-        self.duRand, _, self.randShortPool, self.randLongPool, self.posRand, self.leaving, self.insight, self.tenderCount = self.addPosRand(block, self.short_pos) 
+        self.duRand, _, self.randShortPool, self.randLongPool, self.posRand, self.leaving, self.insight, self.tenderCount, self.insightful self.doubleuninsight = self.addPosRand(block, self.short_pos) 
 
         # learning_criteria
         self.lvl = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -324,7 +324,8 @@ class data_structure:
             leaving = np.zeros(block * multipler , dtype = np.int)
             insight = np.zeros(block * multipler , dtype = np.int)
             tenderCount = np.zeros(block * multipler , dtype = np.int)
-            
+            insightful = np.zeros(block * multipler , dtype = np.int)
+            doubleuninsight = np.zeros(block * multipler , dtype = np.int)
             
             #randDuoShortPool = duRandDuo[duRandDuo < 1.5]
             #randDuoLongPool = duRandDuo[duRandDuo > 1.5]
@@ -332,7 +333,7 @@ class data_structure:
             randLongPool = duRand[duRand > 1.5]
 
 
-            return duRand, duRandDuo, randShortPool, randLongPool, posRand, leaving, insight, tenderCount
+            return duRand, duRandDuo, randShortPool, randLongPool, posRand, leaving, insight, tenderCount, insightful, doubleuninsight
         else:
             print("Odd block checking point.")
             
@@ -671,6 +672,8 @@ class data_structure:
         print('Transition:', round(tran, 4))
         if self.level < 5:
             print('tranLen:', tranLen, '>', (self.level * 4 + self.culmu_tranLen))
+        print('Level:', self.level, np.mean(tr), 'Sensitivity:', self.short_leaving, self.long_leaving)
+            
         
     # end of level_crite
 

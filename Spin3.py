@@ -166,6 +166,7 @@ try:
                     
                     # reset insight time
                     if holding == 0:
+                        beh.insightful[updating_trial] += 1
                         print('insightful')
                     insightTime[0] = -1
                     
@@ -236,6 +237,7 @@ try:
                     insightTime = beh.insight_test(updating_trial, uniTime, insightTime)
                     if ((not holding) & bool(int(insightTime[2]))):
                         print('Paired Uninsight')
+                        beh.doubleuninsight[updating_trial] += 1
                         holding = 1
 
             # bad mice
@@ -287,6 +289,7 @@ try:
                     insightTime = beh.insight_test(updating_trial, uniTime, insightTime)
                     if ((not holding) & bool(int(insightTime[2]))):
                         print('paired uninsight')
+                        beh.doubleuninsight[updating_trial] += 1
                         holding = 1
                         
         ### end of detection
@@ -299,13 +302,13 @@ try:
             # recording data            
             leavingCount = beh.leaving[updating_trial]
             insight = beh.insight[updating_trial]
-            data = [updating_trial + 1, poked, int(pos), trial_init_time, cpoked_base_time, cpoked_time, ppoked_time, round(du, 2), beh.leaving[updating_trial], beh.level, beh.sdr, beh.ldr, beh.insight[updating_trial], int(beh.tenderCount[updating_trial])]
+            data = [updating_trial + 1, poked, int(pos), trial_init_time, cpoked_base_time, cpoked_time, ppoked_time, round(du, 2), beh.leaving[updating_trial], beh.level, beh.sdr, beh.ldr, beh.insight[updating_trial], int(beh.tenderCount[updating_trial]), int(beh.insightful[updating_trial]), int(beh.doubleuninsight[updating_trial])]
             beh.pre_data(data)
             
 
             beh.sdr = beh.shortDuRate(updating_trial, 20)
             beh.ldr = beh.longDuRate(updating_trial, 20)
-            data = [updating_trial + 1, poked, int(pos), trial_init_time, cpoked_base_time, cpoked_time, ppoked_time, round(du, 2), beh.leaving[updating_trial], beh.level, beh.sdr, beh.ldr, beh.insight[updating_trial], int(beh.tenderCount[updating_trial])]
+            data = [updating_trial + 1, poked, int(pos), trial_init_time, cpoked_base_time, cpoked_time, ppoked_time, round(du, 2), beh.leaving[updating_trial], beh.level, beh.sdr, beh.ldr, beh.insight[updating_trial], int(beh.tenderCount[updating_trial]), int(beh.insightful[updating_trial]), int(beh.doubleuninsight[updating_trial])]
             
             beh.record_data(fm, data, updating_trial)
             objData = {'TrialNO': updating_trial + 1,
@@ -321,14 +324,15 @@ try:
                 'ShortDuRate': float(beh.sdr),
                 'LongDuRate': float(beh.ldr),
                 'Insight': int(insight),
-                'TenderCount': int(beh.tenderCount[updating_trial])
+                'TenderCount': int(beh.tenderCount[updating_trial]),
+                'Insightful': int(beh.insightful[updating_trial]),
+                'doubleUninsight': int(beh.doubleuninsight[updating_trial])
                 }
             results = db.child(subName).child(day).push(objData, user['idToken'])
             
             
             # learning level updating
             beh.level_crite(updating_trial)
-            print('Level:', beh.level, 'Sensitivity:', beh.short_leaving, beh.long_leaving)
             print('Time elaspe:', round((time.time() - Session_init_time) / 60), 'minutes', round((time.time() - Session_init_time) % 60), 'seconds')
 
             # next trial num
