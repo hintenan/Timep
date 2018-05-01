@@ -265,10 +265,9 @@ class data_structure:
         self.culmu_sigLen = 0 # culmulative sig length
         # self.culmu_sigTrial = self.lvlt[self.tender] # culmulative sig trial
         # self.culmu_tender = self.lvlt[self.tender] # culmulative tender trials
-        
+        sig2 = {'lvl': 2, 'lvlt': 16, 'lvlstrike': 2}
         self.punishment_center = 2 # 3 sec
         self.punishment_peri = 1 # 3 sec
-        # self.count = 0 # free var
         self.sdr = 0.0
         self.ldr = 0.0
         self.strike = 0
@@ -342,7 +341,7 @@ class data_structure:
         if (self.level < self.curLear['SigRandom']) & (tnum == 0):
             self.shortPool = self.longPool = 0
             
-            self.lvlstrike = [4, 4, 4, 4, 4, 4, 2, 1]
+            self.lvlstrike = [4, 2, 4, 4, 4, 4, 2, 1]
         
         if self.level < self.curLear['SigRandom']:
             if self.level <= self.curLear['Guilded']:
@@ -379,13 +378,18 @@ class data_structure:
         # print('self.culmu_sigLen:', self.culmu_sigLen)
         return du, pos
 
-    def nose_holding(self, ctime, du):
+    def nose_holding(self, du):
         # Sound module
         # beh.buzzer015()
-        le_btime = time.time()
+        nose_btime = time.time()
+        nose_btime015 = nose_btime + 0.15
+        nose_du_cut = nose_btime015 + du - 0.05
+        nose_du = nose_btime015 + du
+        nose_etime = nose_du + 0.15
+
         GPIO.output(pin2buzzer, GPIO.HIGH)
-        time.sleep(0.10)
-        while (time.time() < (le_btime + 0.15)):
+        time.sleep(0.13)
+        while (time.time() < nose_btime015):
             continue
         GPIO.output(pin2buzzer, GPIO.LOW)
 
@@ -398,7 +402,7 @@ class data_structure:
         else:
             max_leaving = self.short_leaving
         
-        while ((time.time() - ctime) < (du)):
+        while (time.time() < nose_du_cut):
             counter += 1
 
             hold_pos_re = rc_time_re(7)
@@ -416,20 +420,22 @@ class data_structure:
                 # Leaving: white noise
                 self.errorBuzzer(pin2buzzer)
                 
-                print("hold_du:", round(le_btime - ctime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
+                print("hold_du:", round(le_btime - nose_btime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
                 holding = 0
                 break
         if holding == 1:
             le_etime = time.time()
             # Holding: beep
             # Sound module
+            while (time.time() < nose_du):
+                continue
             GPIO.output(pin2buzzer, GPIO.HIGH)
-            time.sleep(0.10)
-            while (time.time() < (le_etime + 0.15)):
+            time.sleep(0.13)
+            while (time.time() < nose_etime):
                 continue
             GPIO.output(pin2buzzer, GPIO.LOW)
 
-            print("hold_du:", round(le_btime - ctime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
+            print("hold_du:", round(le_btime - nose_btime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
         print('counter:', counter)
         return holding
     # end of nose_holding

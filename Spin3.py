@@ -171,7 +171,7 @@ try:
                     
                     # beep -> Holding -> beep
                     # Holding = beh.nose_holding(updating_trial) # keyboard input
-                    holding = beh.nose_holding(cpoked_time + 0.15, du)
+                    holding = beh.nose_holding(du)
                     
                     if (holding | (beh.leaving[updating_trial] > 14)):
                         # Update progress
