@@ -354,7 +354,7 @@ try:
                             # progress
                             currentCon['curCon'] = beh.curCon['Center_pending']
                             # print(currentCon)
-                            break
+                            
 
                         if beh.tender == 2:
                             # progress

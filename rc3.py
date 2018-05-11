@@ -14,29 +14,13 @@ pin_water = [36, 38, 40]
 water2lr = [[38, 36], [38, 40]]
 pin2lr = [[13, 11], [13, 15]]
 upper = 20
-upper_re = 150
+upper_re = 120
 lower = 17
 sensi = 17
 pin2buzzer = 19
 
 # interruption
-def rc_time_bar (pin_to_infra):
-    count = 0
-    #Output on the pin for
-    GPIO.setup(pin_to_infra, GPIO.OUT)
-    GPIO.output(pin_to_infra, GPIO.LOW)
-    #Change the pin back to input
-    GPIO.setup(pin_to_infra, GPIO.IN)
-    #Count until the pin goes high
-    while (GPIO.input(pin_to_infra) == GPIO.HIGH):
-        count += 1
-        if count > upper:
-            break
-    #if count < lower:
-    #    print(str(pin_to_infra) + " " + str(count)+" Something happened")
-    return count
-
-# reflection & bar
+# count 0 for efficacy
 def rc_time (pin_to_infra):
     count = 0
     #Output on the pin for
@@ -62,6 +46,41 @@ def rc_time_re (pin_to_infra):
     GPIO.setup(pin_to_infra, GPIO.IN)
     #Count until the pin goes high
     while (GPIO.input(pin_to_infra) == GPIO.LOW):
+        count += 1
+        if count == upper_re:
+            #print(count)
+            break
+    #if count < lower:
+    #    print(str(pin_to_infra) + " " + str(count)+" Something happened")
+    #print(count)
+    return count
+
+# reflection & bar
+def rc_time_bar (pin_to_infra):
+    count = 0
+    #Output on the pin for
+    GPIO.setup(pin_to_infra, GPIO.OUT)
+    GPIO.output(pin_to_infra, GPIO.LOW)
+    #Change the pin back to input
+    GPIO.setup(pin_to_infra, GPIO.IN)
+    #Count until the pin goes high
+    while (GPIO.input(pin_to_infra) == GPIO.HIGH):
+        count += 1
+        if count > upper:
+            break
+    #if count < lower:
+    #    print(str(pin_to_infra) + " " + str(count)+" Something happened")
+    return count
+
+def rc_time_bar_re (pin_to_infra):
+    count = 0
+    #Output on the pin for
+    GPIO.setup(pin_to_infra, GPIO.OUT)
+    GPIO.output(pin_to_infra, GPIO.LOW)
+    #Change the pin back to input
+    GPIO.setup(pin_to_infra, GPIO.IN)
+    #Count until the pin goes high
+    while (GPIO.input(pin_to_infra) == GPIO.HIGH):
         count += 1
         if count == upper_re:
             #print(count)
@@ -241,25 +260,26 @@ class data_structure:
         self.curCon = {'First_trial': -1, 'Misplace': 0, 'Correct_Respose': 1, 'Center_poked': 2, 'Center_pending':10, 'Trial_responded': 100}
         self.curLear = {'Hab': 0, 'HoldingTraining': 8, 'Guilded': 3, 'Sig4': 1, 'Sig2': 2, 'SigRandom': 3, 'Sig': 4 }
         
-        self.level, self.short_pos = self.read_conf_file(sub_conf)
+        self.holding_level, self.level, self.short_pos = self.read_conf_file(sub_conf)
         #if self.level == self.curLear['SigRandom']:
         #    self.level = self.curLear['sig2']
         
         self.min_leaving = 50
-        self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
+        self.short_leaving, self.long_leaving = self.leaving_recount(self.holding_level, self.min_leaving)
 
         self.data = []
         
         # posRand
         self.block = block
-        self.duRand, _, self.randShortPool, self.randLongPool, self.posRand, self.leaving, self.insight, self.tenderCount, self.insightful self.doubleuninsight = self.addPosRand(block, self.short_pos) 
+        self.duRand, _, self.randShortPool, self.randLongPool, self.posRand, self.leaving, self.insight, self.tenderCount, self.insightful, self.doubleuninsight = self.addPosRand(block, self.short_pos) 
 
         # learning_criteria
         self.lvl = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
         self.lvlt = [32, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16]
         # self.lvlp = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.6, 0.3, 0.125, 0, 0, 0, 0, 0, 0, 0, 0]
         # self.lvlf = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
-        
+        self.holding_trial = 80
+        self.culmu_htrial = self.holding_trial # culmulative holding trials
         self.culmu_trial = self.lvlt[self.level] # culmulative trials
         self.culmu_tranLen = 0 # culmulative transition length
         self.culmu_sigLen = 0 # culmulative sig length
@@ -273,9 +293,9 @@ class data_structure:
         self.strike = 0
         self.sustain = 0
 
-    def leaving_recount(self, level, min_leaving):
-        short_leaving = 2050 - (level - self.curLear['Sig']) * 2 * 300
-        long_leaving = 4050 - (level - self.curLear['Sig']) * 2 * 400
+    def leaving_recount(self, holding_level, min_leaving):
+        short_leaving = 2050 - ((holding_level - 3) * 600)
+        long_leaving = 4050 - ((holding_level - 3) * 800)
         
         if short_leaving < min_leaving:
             short_leaving = min_leaving
@@ -342,7 +362,7 @@ class data_structure:
         if (self.level < self.curLear['SigRandom']) & (tnum == 0):
             self.shortPool = self.longPool = 0
             
-            self.lvlstrike = [4, 2, 4, 4, 4, 4, 2, 1]
+            self.lvlstrike = [4, 4, 2, 4, 4, 4, 2, 1]
         
         if self.level < self.curLear['SigRandom']:
             if self.level <= self.curLear['Guilded']:
@@ -380,29 +400,26 @@ class data_structure:
         return du, pos
 
     def nose_holding(self, du):
+        leaving_counter = 0
+        counter = 0
+        if du > 1.5:
+            max_leaving = self.long_leaving
+        else:
+            max_leaving = self.short_leaving
+
         # Sound module
-        # beh.buzzer015()
         nose_btime = time.time()
+        GPIO.output(pin2buzzer, GPIO.HIGH)
         nose_btime015 = nose_btime + 0.15
-        nose_du_cut = nose_btime015 + du - 0.05
+        nose_du_cut = nose_btime015 + du - 0.02
         nose_du = nose_btime015 + du
         nose_etime = nose_du + 0.15
-
-        GPIO.output(pin2buzzer, GPIO.HIGH)
         time.sleep(0.13)
         while (time.time() < nose_btime015):
             continue
         GPIO.output(pin2buzzer, GPIO.LOW)
 
-        leaving_counter = 0
-        holding = 1
-        counter = 0
         le_btime = time.time()
-        if du > 1.5:
-            max_leaving = self.long_leaving
-        else:
-            max_leaving = self.short_leaving
-        
         while (time.time() < nose_du_cut):
             counter += 1
 
@@ -422,23 +439,24 @@ class data_structure:
                 self.errorBuzzer(pin2buzzer)
                 
                 print("hold_du:", round(le_btime - nose_btime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
-                holding = 0
-                break
-        if holding == 1:
-            le_etime = time.time()
-            # Holding: beep
-            # Sound module
-            while (time.time() < nose_du):
-                continue
-            GPIO.output(pin2buzzer, GPIO.HIGH)
-            time.sleep(0.13)
-            while (time.time() < nose_etime):
-                continue
-            GPIO.output(pin2buzzer, GPIO.LOW)
+                print('counter:', counter)
+                return 0 # holding = 0
+        
+        # if holding = 1:
+        le_etime = time.time()
+        # Holding: beep
+        # Sound module
+        while (time.time() < nose_du):
+            continue
+        GPIO.output(pin2buzzer, GPIO.HIGH)
+        time.sleep(0.13)
+        while (time.time() < nose_etime):
+            continue
+        GPIO.output(pin2buzzer, GPIO.LOW)
 
-            print("hold_du:", round(le_btime - nose_btime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
+        print("hold_du:", round(le_btime - nose_btime, 2), "leaving_du:", round(le_etime - le_btime, 2), "counter:", leaving_counter)
         print('counter:', counter)
-        return holding
+        return 1 # holding = 1
     # end of nose_holding
     
     def nose_holding_p(self, ctime, du):
@@ -612,23 +630,31 @@ class data_structure:
         
         cr = self.choiceRate(tnum)
         tranLen, tran = self.trans(tnum)
-        
+        tr = self.tenderRate(tnum)
+        tcr = self.tenderChoiceRate(tnum)
+
         if self.leaving[tnum] > 0:
-            self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
+            self.short_leaving, self.long_leaving = self.leaving_recount(self.holding_level, self.min_leaving)
 
         if self.level == self.curLear['Hab']: # level 0
-            tr = self.tenderRate(tnum)
-            tcr = self.tenderChoiceRate(tnum)
             if tnum == (self.culmu_trial - 1):
                 
                 self.level += 1
                 self.culmu_trial += self.lvlt[self.level]
-                
-                #self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
         
-        elif self.level < self.curLear['Sig']: # level holding
-            tr = self.tenderRate(tnum)
-            tcr = self.tenderChoiceRate(tnum)
+        
+        if (self.holding_level < 5):
+            if tnum == (self.culmu_htrial - 1):
+                if ((self.sdr > 0.8) & (self.ldr > 0.7)):
+
+                    self.holding_level += 1
+                    self.culmu_htrial += self.holding_trial
+                    self.short_leaving, self.long_leaving = self.leaving_recount(self.holding_level, self.min_leaving)
+                else:
+                    self.culmu_htrial += 1
+
+        if self.level < self.curLear['Sig']: # level holding
+            
             if tnum == (self.culmu_trial - 1):
     
                 if ((np.mean(tr) < 0.3) & (tran >= 0.7) & (tranLen >= (self.level * 4 + self.culmu_tranLen))):
@@ -640,7 +666,6 @@ class data_structure:
                     self.level += 1
                     self.culmu_trial += self.lvlt[self.level]
                     self.culmu_tranLen += tranLen
-                    #self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
                 else:
                     self.culmu_trial += 1
                     print('self.culmu_trial =', self.culmu_trial)
@@ -658,7 +683,7 @@ class data_structure:
                     self.level += 1
                     self.culmu_trial += self.lvlt[self.level]
                     self.culmu_tranLen += tranLen
-                    self.short_leaving, self.long_leaving = self.leaving_recount(self.level, self.min_leaving)
+                    
                 else:
                     self.culmu_trial += 1
                     print('self.culmu_trial =', self.culmu_trial)
@@ -672,7 +697,7 @@ class data_structure:
         print('Transition:', round(tran, 4))
         if self.level < 5:
             print('tranLen:', tranLen, '>', (self.level * 4 + self.culmu_tranLen))
-        print('Level:', self.level, np.mean(tr), 'Sensitivity:', self.short_leaving, self.long_leaving)
+        print('Level:', self.level, self.holding_level, np.mean(tr), 'Sensitivity:', self.short_leaving, self.long_leaving)
             
         
     # end of level_crite
@@ -704,11 +729,13 @@ class data_structure:
                         short_pos = int(row['val'])
                     elif row['description'] == 'p1 stages':
                         learning_level = int(row['val'])
+                    elif row['description'] == 'holding level':
+                        holding_level = int(row['val'])
 
         except IOError as e:
             print("Unable to open configure file", e) #Does not exist OR no reading permissions
             exit()
-        return learning_level, short_pos
+        return holding_level, learning_level, short_pos
     # end of read_conf_file(sub_conf)
 
     def write_conf_file(self, sub_conf):
@@ -720,6 +747,7 @@ class data_structure:
                 writer.writeheader()
                 writer.writerow({'val': self.short_pos, 'description': 'short position'})
                 writer.writerow({'val': self.level, 'description': 'p1 stages'})
+                writer.writerow({'val': self.holding_level, 'description': 'holding level'})
                 # writer.writerow({'val', 'description')
         except IOError as e:
             print("Unable to write configure file", e) #Does not exist OR no reading permissions

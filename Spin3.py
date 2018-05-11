@@ -127,7 +127,7 @@ updating_trial = 0
 currentCon = {'curCon': -1, 'du': 0.6}
 currentCon['curCon'] = beh.curCon['First_trial']
 total_trial = 400
-tt = 0.06
+tt = 0.03
 try:
     Session_init_time = time.time()
     token_updating_timer = time.time()
